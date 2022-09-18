@@ -1,14 +1,31 @@
-using System.ComponentModel;
-using System.Text.RegularExpressions;
+/*
+Will Habsburg
+willcopy
+WillCopy.cs - main logic
+
+*/
+
 namespace willcopy
 {
     public class WillCopy
     {
-        Output logOut;
-        Helpers h;
-        string fromDir, toDir, command = "c", mode = "u";
-        bool recur, quiet, hidden, move = false, list = false;
+        Output logOut; // for logging
+        Helpers h; // some helper functions
+        string fromDir, // directory to copy from
+            toDir, // directory to copy to
+            command = "c", // default command (see below)
+            mode = "u"; // default mode (see below)
+        bool recur, // recursive copy?
+            quiet, // prevent output to console
+            hidden, // copy hidden files?
+            move = false, // flag for moving instead of copying
+            list = false; // flag for listing instead of copying
+        // counter variables to display stats to user
         private long dirCreate = 0, dirDelete = 0, dirFail = 0, fileCreate = 0, fileDelete = 0, fileFail = 0, fileSkip = 0;
+
+        /*
+            Constructor for WillCopy - set properties based on command line options
+        */
         public WillCopy(string fromDir, string toDir, string? command, string? mode, string? log, bool recur, bool quiet, bool hidden)
         {
             // create log output instance
@@ -23,6 +40,7 @@ namespace willcopy
             if (!Directory.Exists(fromDir))
                 h.fatalError("Source Directory does not exist.");
             this.fromDir = fromDir;
+
             // Check to see if destination directory exists, create it if it doesn't
             if (!Directory.Exists(toDir) && command != "l")
             {
@@ -37,10 +55,13 @@ namespace willcopy
             }
             this.toDir = toDir;
 
-            if (this.fromDir.ToCharArray()[this.fromDir.Length - 1] != Path.DirectorySeparatorChar) this.fromDir += Path.DirectorySeparatorChar;
-            if (this.toDir.ToCharArray()[this.toDir.Length - 1] != Path.DirectorySeparatorChar) this.toDir += Path.DirectorySeparatorChar;
+            // append directory separator characters to end of paths
+            if (this.fromDir.ToCharArray()[this.fromDir.Length - 1] != Path.DirectorySeparatorChar)
+                this.fromDir += Path.DirectorySeparatorChar;
+            if (this.toDir.ToCharArray()[this.toDir.Length - 1] != Path.DirectorySeparatorChar)
+                this.toDir += Path.DirectorySeparatorChar;
 
-            // Check for proper command ("m", "c", "l")
+            // Check for proper command ("m"ove, "c"reate, "l"ist) (see Program.cs)
             if (command == null)
             {
                 this.command = "c";
@@ -62,29 +83,32 @@ namespace willcopy
                 }
             }
 
-            // Check for proper mode ("a", "n", "u", "c")
+            // Check for proper mode ("a"lways overwrite, "n"ever overwrite, "u"pdate if newer, "c"lone)
+            // see Program.cs
+            // Default mode = update
             if (mode == null)
             {
-                mode = "u";
+                this.mode = "u";
             }
+            // if mode specified is not valid, give an error
             else if (!Regex.Match(mode, @"a|n|u|c").Success)
             {
                 h.fatalError("Not a vaid mode!  Must be one of a, n, u, or c");
             }
+            // else set the mode
             else
             {
                 this.mode = mode;
             }
-            if (mode == "c" || command == "m")
-            {
-                hidden = true;
-            }
         }
 
+        /*
+            Main logic for WillCopy
+        */
         public void start()
         {
-            string tmp;
-            bool found;
+            string tmp; // to hold destination directory and file names
+            bool found; // flag if directory or file is found
             DateTime fiDT = DateTime.Now, foDT = DateTime.Now;
             long fiSize = 0, foSize = 0;
 

@@ -1,4 +1,11 @@
-﻿using willcopy;
+﻿/*
+Will Habsburg
+willcopy
+Program.cs - entry point for this program
+This file is self-explanitory, using System.CommandLine to parse the 
+command line and call WillCopy.start()
+*/
+using willcopy;
 
 var fromDir = new Argument<string>("from", "Source Directory");
 var toDir = new Argument<string>("to", "Destination Directory");
